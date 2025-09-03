@@ -1,5 +1,5 @@
 /*
-04_short_version_complete.sql
+04_master_version_short.sql
 End-to-end pipeline (reduced to relevant features for choosen segmentation, final SELECT at bottom):
 */
 
