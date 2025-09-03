@@ -12,7 +12,7 @@ cutoff AS (
 -- Sessions YTD (aggregated once)
 sess_agg_ytd AS (
   SELECT
-    EXTRACT(YEAR FROM s.session_start)::int AS the_year,
+    EXTRACT(YEAR FROM s.session_start)::int AS ytd_year,
     COUNT(*)                                 AS sessions,
     COUNT(DISTINCT s.user_id)                AS active_users,
     COUNT(DISTINCT s.trip_id)                AS trips_booked
@@ -25,7 +25,7 @@ sess_agg_ytd AS (
 -- Trips per user YTD to derive repeat/booker metrics
 per_user_trips_ytd AS (
   SELECT
-    EXTRACT(YEAR FROM s.session_start)::int AS the_year,
+    EXTRACT(YEAR FROM s.session_start)::int AS ytd_year,
     s.user_id,
     COUNT(DISTINCT s.trip_id)               AS trips_user_year
   FROM sessions s
@@ -36,7 +36,7 @@ per_user_trips_ytd AS (
 ),
 repeat_and_bookers_ytd AS (
   SELECT
-    the_year,
+    ytd_year,
     COUNT(*) FILTER (WHERE trips_user_year > 1) AS repeat_bookers,
     COUNT(*)                                    AS bookers_total
   FROM per_user_trips_ytd
@@ -46,7 +46,7 @@ repeat_and_bookers_ytd AS (
 -- New users by signup year (YTD-aligned)
 new_users_ytd AS (
   SELECT
-    EXTRACT(YEAR FROM u.sign_up_date)::int AS the_year,
+    EXTRACT(YEAR FROM u.sign_up_date)::int AS ytd_year,
     COUNT(DISTINCT u.user_id)              AS new_users
   FROM users u
   CROSS JOIN cutoff c
@@ -56,25 +56,25 @@ new_users_ytd AS (
 
 -- Distinct report years present in sessions or signups (YTD)
 years_ytd AS (
-  SELECT the_year FROM sess_agg_ytd
+  SELECT ytd_year FROM sess_agg_ytd
   UNION
-  SELECT the_year FROM new_users_ytd
+  SELECT ytd_year FROM new_users_ytd
 ),
 
 -- Total registered users cumulative up to the YTD cutoff (same month/day per year)
 total_users_ytd AS (
   SELECT
-    y.the_year,
+    y.ytd_year,
     COUNT(*) AS total_users
   FROM years_ytd y
   CROSS JOIN cutoff c
   JOIN users u
-    ON u.sign_up_date::date <= MAKE_DATE(y.the_year, c.m, c.d)
-  GROUP BY y.the_year
+    ON u.sign_up_date::date <= MAKE_DATE(y.ytd_year, c.m, c.d)
+  GROUP BY y.ytd_year
 )
 
 SELECT
-  y.the_year,
+  y.ytd_year,
   COALESCE(sa.sessions,0)       AS sessions,
   COALESCE(sa.trips_booked,0)   AS trips_booked,
   COALESCE(sa.active_users,0)   AS active_users,
@@ -83,16 +83,16 @@ SELECT
   (COALESCE(tu.total_users,0) - COALESCE(sa.active_users,0)) AS dormant_users,
 
   -- YoY growth within YTD (percent)
-  ROUND( (COALESCE(sa.sessions,0)     - LAG(COALESCE(sa.sessions,0))     OVER(ORDER BY y.the_year))
-         / NULLIF(LAG(COALESCE(sa.sessions,0))     OVER(ORDER BY y.the_year), 0)::numeric * 100, 2) AS growth_sessions_pct,
-  ROUND( (COALESCE(sa.trips_booked,0) - LAG(COALESCE(sa.trips_booked,0)) OVER(ORDER BY y.the_year))
-         / NULLIF(LAG(COALESCE(sa.trips_booked,0)) OVER(ORDER BY y.the_year), 0)::numeric * 100, 2) AS growth_trips_pct,
-  ROUND( (COALESCE(sa.active_users,0) - LAG(COALESCE(sa.active_users,0)) OVER(ORDER BY y.the_year))
-         / NULLIF(LAG(COALESCE(sa.active_users,0)) OVER(ORDER BY y.the_year), 0)::numeric * 100, 2) AS growth_active_users_pct,
-  ROUND( (COALESCE(nu.new_users,0)    - LAG(COALESCE(nu.new_users,0))    OVER(ORDER BY y.the_year))
-         / NULLIF(LAG(COALESCE(nu.new_users,0))    OVER(ORDER BY y.the_year), 0)::numeric * 100, 2) AS growth_new_users_pct,
-  ROUND( (COALESCE(tu.total_users,0)  - LAG(COALESCE(tu.total_users,0))  OVER(ORDER BY y.the_year))
-         / NULLIF(LAG(COALESCE(tu.total_users,0))  OVER(ORDER BY y.the_year), 0)::numeric * 100, 2) AS growth_total_users_pct,
+  ROUND( (COALESCE(sa.sessions,0)     - LAG(COALESCE(sa.sessions,0))     OVER(ORDER BY y.ytd_year))
+         / NULLIF(LAG(COALESCE(sa.sessions,0))     OVER(ORDER BY y.ytd_year), 0)::numeric * 100, 2) AS growth_sessions_pct,
+  ROUND( (COALESCE(sa.trips_booked,0) - LAG(COALESCE(sa.trips_booked,0)) OVER(ORDER BY y.ytd_year))
+         / NULLIF(LAG(COALESCE(sa.trips_booked,0)) OVER(ORDER BY y.ytd_year), 0)::numeric * 100, 2) AS growth_trips_pct,
+  ROUND( (COALESCE(sa.active_users,0) - LAG(COALESCE(sa.active_users,0)) OVER(ORDER BY y.ytd_year))
+         / NULLIF(LAG(COALESCE(sa.active_users,0)) OVER(ORDER BY y.ytd_year), 0)::numeric * 100, 2) AS growth_active_users_pct,
+  ROUND( (COALESCE(nu.new_users,0)    - LAG(COALESCE(nu.new_users,0))    OVER(ORDER BY y.ytd_year))
+         / NULLIF(LAG(COALESCE(nu.new_users,0))    OVER(ORDER BY y.ytd_year), 0)::numeric * 100, 2) AS growth_new_users_pct,
+  ROUND( (COALESCE(tu.total_users,0)  - LAG(COALESCE(tu.total_users,0))  OVER(ORDER BY y.ytd_year))
+         / NULLIF(LAG(COALESCE(tu.total_users,0))  OVER(ORDER BY y.ytd_year), 0)::numeric * 100, 2) AS growth_total_users_pct,
 
   -- Efficiency & loyalty proxies (YTD-aligned)
   ROUND( (COALESCE(sa.trips_booked,0)::numeric / NULLIF(COALESCE(sa.sessions,0),0)) * 100, 2) AS session_to_booking_conv_pct,
@@ -105,11 +105,11 @@ SELECT
   ROUND( (COALESCE(rb.bookers_total,0)::numeric / NULLIF(COALESCE(tu.total_users,0),0)) * 100, 2) AS booker_rate_pct,
   ROUND( ((COALESCE(tu.total_users,0) - COALESCE(sa.active_users,0))::numeric / NULLIF(COALESCE(tu.total_users,0),0)) * 100, 2) AS dormant_rate_pct
 FROM years_ytd y
-LEFT JOIN sess_agg_ytd           sa ON sa.the_year = y.the_year
-LEFT JOIN new_users_ytd          nu ON nu.the_year = y.the_year
-LEFT JOIN total_users_ytd        tu ON tu.the_year = y.the_year
-LEFT JOIN repeat_and_bookers_ytd rb ON rb.the_year = y.the_year
-ORDER BY y.the_year;
+LEFT JOIN sess_agg_ytd           sa ON sa.ytd_year = y.ytd_year
+LEFT JOIN new_users_ytd          nu ON nu.ytd_year = y.ytd_year
+LEFT JOIN total_users_ytd        tu ON tu.ytd_year = y.ytd_year
+LEFT JOIN repeat_and_bookers_ytd rb ON rb.ytd_year = y.ytd_year
+ORDER BY y.ytd_year;
 
 
 

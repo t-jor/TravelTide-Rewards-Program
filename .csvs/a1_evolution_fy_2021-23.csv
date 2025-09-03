@@ -1,0 +1,4 @@
+"the_year","sessions","trips_booked","active_users","new_users","total_users","dormant_users","growth_sessions_pct","growth_trips_pct","growth_active_users_pct","growth_new_users_pct","growth_total_users_pct","session_to_booking_conv_pct","trips_per_active_user","sessions_per_active_user","repeat_booker_share_pct","active_user_rate_pct","booker_rate_pct","dormant_rate_pct"
+2021,"274061","114214","75555","75555","75555","0","","","","","","41.67","1.51","3.63","54.09","100.00","82.76","0.00"
+2022,"1975554","821979","501714","427441","502996","1282","620.84","619.68","564.04","465.73","565.73","41.61","1.64","3.94","57.60","99.75","83.62","0.25"
+2023,"3158448","1319842","982831","517930","1020926","38095","59.88","60.57","95.89","21.17","102.97","41.79","1.34","3.21","48.33","96.27","75.40","3.73"
