@@ -1,5 +1,5 @@
 /*
-00_master_pipeline.sql
+00_master_version_complete.sql
 End-to-end pipeline (read-only friendly, all CTEs, final SELECT at bottom):
 - Session cohort, joins, cleaning, enrichments
 - Trip status per trip
