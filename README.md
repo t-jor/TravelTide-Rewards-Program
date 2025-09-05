@@ -55,7 +55,7 @@ Our role as the **Analytics team** is to segment customers, validate which rewar
 
 ---
 
-## 🎯 Segmentation Approach
+## 🧩 Segmentation Approach
 
 - Basis: 👆 **Behavior** | ✈️ **Travel** | 👤 **Demographics**  
 - Outcome: 10 meaningful segments → ⭐ 4 Core | ➕ 5 Supplementary | ⚪ Others  
