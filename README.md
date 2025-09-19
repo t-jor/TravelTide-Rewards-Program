@@ -80,6 +80,7 @@ Our role as the **Analytics team** is to segment customers, validate which rewar
 - Deliverables:  
   - **[Full Report](reports/TravelTide_FullReport_Final.pdf)** – detailed analysis, all 10 segments  
   - **[Executive Summary](reports/TravelTide_ExecutiveSummary_Final.pdf)** – one-pager for management
+  - **[Segment Definitions](docs/TravelTide_Segment_Definitions.xlsx)** – features and weights per segment
 
 ---
 
