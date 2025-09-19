@@ -78,8 +78,8 @@ Our role as the **Analytics team** is to segment customers, validate which rewar
 - SQL-based segmentation into 10 groups with assigned perks  
 - Tableau dashboards illustrating user behavior and segment distribution  
 - Deliverables:  
-  - **Full Report** (detailed analysis, all 10 segments)  
-  - **Executive Summary** (one-pager for management)  
+  - **[Full Report](reports/TravelTide_FullReport_Final.pdf)** – detailed analysis, all 10 segments  
+  - **[Executive Summary](reports/TravelTide_ExecutiveSummary_Final.pdf)** – one-pager for management
 
 ---
 
